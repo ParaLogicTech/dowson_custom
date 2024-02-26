@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include dowson_custom *.css
+recursive-include dowson_custom *.csv
+recursive-include dowson_custom *.html
+recursive-include dowson_custom *.ico
+recursive-include dowson_custom *.js
+recursive-include dowson_custom *.json
+recursive-include dowson_custom *.md
+recursive-include dowson_custom *.png
+recursive-include dowson_custom *.py
+recursive-include dowson_custom *.svg
+recursive-include dowson_custom *.txt
+recursive-exclude dowson_custom *.pyc
