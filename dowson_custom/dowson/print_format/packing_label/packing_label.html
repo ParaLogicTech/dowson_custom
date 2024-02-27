@@ -1,0 +1,83 @@
+<style>
+	@media screen {
+		.print-format {
+			border: 1px solid lightgray;
+			border-radius: 0;
+			max-width: 120mm;
+			min-height: 190mm;
+			padding: 5mm;
+		}
+	}
+	@media print {
+		/*.print-format {
+			orientation:Landscape;
+			page-size:Custom;
+			page-width:120mm;
+			page-height:190mm;
+
+			margin-top:5mm;
+			margin-bottom:5mm;
+			margin-left:5mm;
+			margin-right:5mm;
+		}*/
+	}
+
+	hr {
+		border-top: 1px dashed black !important;
+		margin: 6px 0;
+	}
+</style>
+
+<!-- Header -->
+<div class="clearfix">
+	<div class="pull-left" style="width: 50%">
+		<h3 style="margin: 0 0 3px 0">
+			Dowson Pty Ltd
+		</h3>
+		<div>
+			<b>Package #:</b>
+			{{ doc.name }}
+		</div>
+		<div>
+			<b>PO #:</b>
+			{{ doc.po_no }}
+		</div>
+	</div>
+
+	<div class="pull-right text-right" style="width: 50%;">
+		{{ doc.barcode_svg }}
+	</div>
+</div>
+
+<!-- Items -->
+{% for d in doc.items %}
+<div>
+	<hr>
+	<div class="clearfix">
+		<div class="pull-left" style="width: 60%">
+			<b>Batch:</b>
+			{{ d.batch_no or "" }}
+		</div>
+		<div class="pull-right text-right" style="width: 40%">
+			<b>SKU:</b>
+			{{ d.item_code }}
+		</div>
+	</div>
+	<div class="clearfix">
+		<div class="pull-left" style="width: 60%">
+			<b>DOM:</b>
+			{{ frappe.format_date(d.production_date, "d MMM y")|upper if d.production_date else "" }}
+			<b>Time: </b>
+			{{ frappe.utils.format_time(d.production_time, "hh:mm a")|upper if d.production_time else ""  }}
+		</div>
+		<div class="pull-right text-right" style="width: 40%">
+			<b>Qty:</b>
+			{{ d.get_formatted("qty") }} {{ d.uom }}
+		</div>
+	</div>
+	<div>
+		<b>Description:</b>
+		{{ d.item_name }}
+	</div>
+</div>
+{% endfor %}

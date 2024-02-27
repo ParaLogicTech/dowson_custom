@@ -4,27 +4,50 @@ from barcode.writer import SVGWriter
 from io import BytesIO
 
 
+def packing_slip_before_print(doc, method, print_settings):
+	# Barcode
+	doc.barcode_svg = get_barcode_svg(doc.name, module_width=0.3, module_height=13, font_size=0)
+
+	# PO #
+	doc.sales_orders = list(set(item.sales_order for item in doc.items if item.get('sales_order')))
+	if doc.sales_orders:
+		po_nos = frappe.get_all("Sales Order", filters={"name": ["in", doc.sales_orders]}, pluck="po_no")
+		doc.po_no = ", ".join(list(set([n for n in po_nos if n])))
+	else:
+		doc.po_no = ""
+
+	# Batch Details
+	for d in doc.items:
+		d.update(get_work_order(d.batch_no))
+
+
 def batch_before_print(doc, method, print_settings):
-	get_barcode_svg(doc)
-	get_work_order(doc)
+	doc.barcode_svg = get_barcode_svg(doc.name, module_width=0.4, module_height=23)
+	doc.update(get_work_order(doc.name))
 
 
-def get_barcode_svg(doc):
-	barcode = Code128(doc.name, writer=SVGWriter())
+def get_barcode_svg(number, module_width=0.2, module_height=15, font_size=10):
+	barcode = Code128(number, writer=SVGWriter())
 
 	barcode_io = BytesIO()
 	barcode.write(barcode_io, options={
-		"module_width": 0.4,
-		"module_height": 23,
+		"module_width": module_width,
+		"module_height": module_height,
+		"font_size": font_size,
 		"text_distance": 4,
 		"quiet_zone": 0,
 	})
 
 	barcode_io.seek(0)
-	doc.barcode_svg = barcode_io.read().decode('UTF-8')
+	return barcode_io.read().decode('UTF-8')
 
 
-def get_work_order(doc):
+def get_work_order(batch_no):
+	out = frappe._dict()
+
+	if not batch_no:
+		return out
+
 	data = frappe.db.sql("""
 		select ste.work_order, sle.posting_date, sle.posting_time
 		from `tabStock Ledger Entry` sle
@@ -32,12 +55,13 @@ def get_work_order(doc):
 		where sle.batch_no = %s and ifnull(ste.work_order, '') != '' and sle.actual_qty > 0
 		order by sle.posting_date desc, sle.posting_time desc, sle.creation desc
 		limit 1
-	""", doc.name, as_dict=1)
+	""", batch_no, as_dict=1)
 
 	data = data[0] if data else None
 	if data:
-		doc.work_order = data.work_order
-		doc.production_date = data.posting_date
-		doc.production_time = data.posting_time
+		out.work_order = data.work_order
+		out.production_date = data.posting_date
+		out.production_time = data.posting_time
+		out.work_order_doc = frappe.get_doc("Work Order", data.work_order)
 
-		doc.work_order_doc = frappe.get_doc("Work Order", doc.work_order)
+	return out

@@ -10,7 +10,10 @@ app_license = "MIT"
 doc_events = {
 	"Batch": {
 		"before_print": "dowson_custom.overrides.batch_before_print",
-	}
+	},
+	"Packing Slip": {
+		"before_print": "dowson_custom.overrides.packing_slip_before_print",
+	},
 }
 
 # Includes in <head>
