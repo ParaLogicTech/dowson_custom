@@ -1,0 +1,54 @@
+<style>
+	@media screen {
+		.print-format {
+			border: 1px solid lightgray;
+			border-radius: 0;
+			max-width: 120mm;
+			min-height: 190mm;
+			padding: 5mm;
+		}
+	}
+	@media print {
+		/*.print-format {
+			orientation:Landscape;
+			page-size:Custom;
+			page-width:120mm;
+			page-height:190mm;
+
+			margin-top:5mm;
+			margin-bottom:5mm;
+			margin-left:5mm;
+			margin-right:5mm;
+		}*/
+	}
+
+	hr {
+		border-top: 1px dashed black !important;
+		margin: 10px 0;
+	}
+</style>
+
+<div><b>Batch Number:</b> {{ doc.name }}</div>
+
+<hr>
+
+<div><b>Product Code:</b> {{ doc.item }}</div>
+<div><b>Product Description:</b> {{ doc.item_name }}</div>
+
+{% if doc.work_order %}
+	<hr>
+	<div><b>Work Order:</b> {{ doc.work_order }}</div>
+	<div><b>Production Date:</b> {{ frappe.format_date(doc.production_date, "d MMM y")|upper }}</div>
+	<div><b>Production Time:</b> {{ frappe.utils.format_time(doc.production_time, "hh:mm a")|upper }}</div>
+
+	{% for d in doc.work_order_doc.operations %}
+	<hr>
+	<div><b>Operation:</b> {{ d.operation }}</div>
+	<div><b>Workstation:</b> {{ d.operation }}</div>
+	{% endfor %}
+{% endif %}
+
+<hr>
+<div>
+	{{ doc.barcode_svg }}
+</div>

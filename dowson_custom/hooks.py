@@ -7,6 +7,12 @@ app_description = "Dowson"
 app_email = "info@paralogic.io"
 app_license = "MIT"
 
+doc_events = {
+	"Batch": {
+		"before_print": "dowson_custom.overrides.batch_before_print",
+	}
+}
+
 # Includes in <head>
 # ------------------
 
