@@ -23,6 +23,7 @@ def packing_slip_before_print(doc, method, print_settings):
 
 def batch_before_print(doc, method, print_settings):
 	doc.barcode_svg = get_barcode_svg(doc.name, module_width=0.4, module_height=23)
+	doc.update(get_purchase_receipt(doc.name))
 	doc.update(get_work_order(doc.name))
 
 
@@ -52,7 +53,7 @@ def get_work_order(batch_no):
 		select ste.work_order, sle.posting_date, sle.posting_time
 		from `tabStock Ledger Entry` sle
 		inner join `tabStock Entry` ste on ste.name = sle.voucher_no and sle.voucher_type = 'Stock Entry'
-		where sle.batch_no = %s and ifnull(ste.work_order, '') != '' and sle.actual_qty > 0
+		where sle.batch_no = %s and ifnull(ste.work_order, '') != '' and sle.actual_qty > 0 and ste.purpose = 'Manufacture'
 		order by sle.posting_date desc, sle.posting_time desc, sle.creation desc
 		limit 1
 	""", batch_no, as_dict=1)
@@ -63,5 +64,32 @@ def get_work_order(batch_no):
 		out.production_date = data.posting_date
 		out.production_time = data.posting_time
 		out.work_order_doc = frappe.get_doc("Work Order", data.work_order)
+
+	return out
+
+
+def get_purchase_receipt(batch_no):
+	out = frappe._dict()
+
+	if not batch_no:
+		return out
+
+	data = frappe.db.sql("""
+		select prec.name, prec.supplier, prec.supplier_name, prec.posting_date, prec.posting_time, i.purchase_order
+		from `tabPurchase Receipt Item` i
+		inner join `tabPurchase Receipt` prec on prec.name = i.parent
+		where i.batch_no = %s
+		order by prec.posting_date desc, prec.posting_time desc, prec.creation desc
+		limit 1
+	""", batch_no, as_dict=1)
+
+	data = data[0] if data else None
+	if data:
+		out.purchase_receipt = data.name
+		out.purchase_order = data.purchase_order
+		out.supplier = data.supplier
+		out.supplier_name = data.supplier_name
+		out.received_date = data.posting_date
+		out.received_time = data.posting_time
 
 	return out

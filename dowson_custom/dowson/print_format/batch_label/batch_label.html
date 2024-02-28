@@ -46,6 +46,13 @@
 	<div><b>Operation:</b> {{ d.operation }}</div>
 	<div><b>Workstation:</b> {{ d.operation }}</div>
 	{% endfor %}
+{% elif doc.purchase_receipt %}
+	<hr>
+	<div><b>Supplier:</b> {{ doc.supplier or doc.supplier_name or "" }}</div>
+	<div><b>Purchase Order:</b> {{ doc.purchase_order or "" }}</div>
+	<div><b>Purchase Receipt:</b> {{ doc.purchase_receipt or "" }}</div>
+	<div><b>Received Date:</b> {{ frappe.format_date(doc.received_date, "d MMM y")|upper }}</div>
+	<div><b>Received Time:</b> {{ frappe.utils.format_time(doc.received_time, "hh:mm a")|upper }}</div>
 {% endif %}
 
 <hr>
